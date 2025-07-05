@@ -89,20 +89,23 @@ app.use((req, res, next) => {
   });
 })();
 
-// Подключение маршрутов
-const chatRoutes = require('./routes/chatRoutes');
-const streamingRoutes = require('./routes/streamingRoutes');
-const imageRoutes = require('./routes/imageRoutes');
-const checkpointRoutes = require('./routes/checkpointRoutes');
-const directAIRoutes = require('./routes/directAIRoutes');
-const searchRoutes = require('./routes/searchRoutes');
-const smartChatRoutes = require('./routes/smartChatRoutes');
-const commercialRoutes = require('./routes/commercialRoutes');
-const reportRoutes = require('./routes/reportRoutes');
-const embroideryRoutes = require('./routes/embroideryRoutes');
-const vectorRoutes = require('./routes/vectorRoutes');
-const deepspeekRoutes = require('./routes/deepspeekRoutes');
-const pythonRoutes = require('./routes/pythonRoutes');
+// Подключение маршрутов (через динамический import для совместимости)
+const { createRequire } = require('module');
+const customRequire = createRequire(import.meta.url);
+
+const chatRoutes = customRequire('./routes/chatRoutes');
+const streamingRoutes = customRequire('./routes/streamingRoutes');
+const imageRoutes = customRequire('./routes/imageRoutes');
+const checkpointRoutes = customRequire('./routes/checkpointRoutes');
+const directAIRoutes = customRequire('./routes/directAIRoutes');
+const searchRoutes = customRequire('./routes/searchRoutes');
+const smartChatRoutes = customRequire('./routes/smartChatRoutes');
+const commercialRoutes = customRequire('./routes/commercialRoutes');
+const reportRoutes = customRequire('./routes/reportRoutes');
+const embroideryRoutes = customRequire('./routes/embroideryRoutes');
+const vectorRoutes = customRequire('./routes/vectorRoutes');
+const deepspeekRoutes = customRequire('./routes/deepspeekRoutes');
+const pythonRoutes = customRequire('./routes/pythonRoutes');
 
 app.use('/api/chat', chatRoutes);
 app.use('/api/stream', streamingRoutes);
@@ -119,5 +122,5 @@ app.use('/api/deepspeek', deepspeekRoutes);
 app.use('/api/python', pythonRoutes);
 
 // 🧠 НОВИНКА: Интеллектуальное улучшение изображений
-const enhancedImageRoutes = require('./enhanced-image-routes.js');
+const enhancedImageRoutes = customRequire('./enhanced-image-routes.js');
 app.use('/api/enhanced-images', enhancedImageRoutes);
