@@ -50,8 +50,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
-
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
@@ -59,15 +57,6 @@ app.use((req, res, next) => {
     res.status(status).json({ message });
     throw err;
   });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
 
   // Инициализируем векторизатор-менеджер (lazy loading)
   try {
@@ -77,47 +66,20 @@ app.use((req, res, next) => {
     log('Vectorizer Manager initialization deferred');
   }
 
-  // Используем переменную окружения PORT если она доступна, иначе 5000
-  // Это критично для правильной работы в окружении Replit
-  // Подключение маршрутов (через динамический import для совместимости)
-  const chatRoutes = await import('./routes/chatRoutes');
-  const streamingRoutes = await import('./routes/streamingRoutes');
-  const imageRoutes = await import('./routes/imageRoutes');
-  const checkpointRoutes = await import('./routes/checkpointRoutes');
-  const directAIRoutes = await import('./routes/directAIRoutes');
-  const searchRoutes = await import('./routes/searchRoutes');
-  const smartChatRoutes = await import('./routes/smartChatRoutes');
-  const commercialRoutes = await import('./routes/commercialRoutes');
-  const reportRoutes = await import('./routes/reportRoutes');
-  const embroideryRoutes = await import('./routes/embroideryRoutes');
-  const vectorRoutes = await import('./routes/vectorRoutes');
-  const deepspeekRoutes = await import('./routes/deepspeekRoutes');
-  const pythonRoutes = await import('./routes/pythonRoutes');
+  // Регистрируем все маршруты через главную функцию  
+  const httpServer = await registerRoutes(app);
 
-  app.use('/api/chat', chatRoutes);
-  app.use('/api/stream', streamingRoutes);
-  app.use('/api/images', imageRoutes);
-  app.use('/api/checkpoints', checkpointRoutes);
-  app.use('/api/direct-ai', directAIRoutes);
-  app.use('/api/search', searchRoutes);
-  app.use('/api/smart-chat', smartChatRoutes);
-  app.use('/api/commercial', commercialRoutes);
-  app.use('/api/reports', reportRoutes);
-  app.use('/api/embroidery', embroideryRoutes);
-  app.use('/api/vector', vectorRoutes);
-  app.use('/api/deepspeek', deepspeekRoutes);
-  app.use('/api/python', pythonRoutes);
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (app.get("env") === "development") {
+    await setupVite(app, httpServer);
+  } else {
+    serveStatic(app);
+  }
 
-  // 🧠 НОВИНКА: Интеллектуальное улучшение изображений
-  const enhancedImageRoutes = await import('./enhanced-image-routes.js');
-  app.use('/api/enhanced-images', enhancedImageRoutes);
-
-  const PORT = process.env.PORT || 5000;
-  server.listen({
-    port: PORT,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  const PORT = Number(process.env.PORT) || 5000;
+  httpServer.listen(PORT, () => {
     log(`serving on port ${PORT}`);
   });
 })();
