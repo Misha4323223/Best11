@@ -6,8 +6,22 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import cors from 'cors';
 
+// Объявление модуля для подавления TypeScript ошибок
+declare module './vectorizer-manager' {
+  const content: any;
+  export default content;
+}
+
+// Объявление типов для vectorizer-manager
+interface VectorizerManager {
+  checkHealth(): Promise<any>;
+  startVectorizer(): Promise<boolean>;
+  stopVectorizer(): Promise<void>;
+  getStatus(): any;
+}
+
 // Инициализируем векторизатор-менеджер (lazy loading)
-let vectorizerManager: any = null;
+let vectorizerManager: VectorizerManager | null = null;
 
 const app = express();
 app.use(cors()); // Разрешаем CORS для всех маршрутов
@@ -60,6 +74,7 @@ app.use((req, res, next) => {
 
   // Инициализируем векторизатор-менеджер (lazy loading)
   try {
+    // @ts-ignore - JS module без типов
     vectorizerManager = await import('./vectorizer-manager');
     log('Vectorizer Manager initialized');
   } catch (error) {
